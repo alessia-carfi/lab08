@@ -1,6 +1,19 @@
 package it.unibo.mvc;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 
 /**
  * A very simple program using a graphical interface.
@@ -8,6 +21,68 @@ import javax.swing.JFrame;
  */
 public final class SimpleGUI {
 
-    private final JFrame frame = new JFrame();
+    private static final String TITLE = "My GUI";
+    private static final String PATH = System.getProperty("user.home")
+        + File.separator
+        + SimpleGUI.class.getSimpleName() + ".txt";
+    private static final int PROPORTION = 5;
 
+    private final JFrame frame = new JFrame(TITLE);
+
+    /**
+     * Creates a new SimpleGUI.
+     */
+    public SimpleGUI() {
+        final JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        final JTextArea text = new JTextArea();
+        final JButton button = new JButton("Save");
+        panel.add(button, BorderLayout.SOUTH);
+        panel.add(text);
+
+        frame.setContentPane(panel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+
+                if (JOptionPane.showConfirmDialog(
+                    frame,
+                    "Save file",
+                    "Do you want to save file?",
+                    JOptionPane.YES_NO_OPTION
+                    ) == 0) {
+                    try (PrintStream ps = new PrintStream(PATH, StandardCharsets.UTF_8)) {
+                        ps.print(text.getText());
+                    } catch (IOException e1) {
+                        JOptionPane.showMessageDialog(frame, e1, "Error", JOptionPane.ERROR_MESSAGE);
+                        e1.printStackTrace(); // NOPMD: allowed as this is just an exercise
+                    }
+                }
+            }
+        });
+    }
+
+    private void display() {
+
+        final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        final int sw = (int) screen.getWidth();
+        final int sh = (int) screen.getHeight();
+        frame.setSize(sw / PROPORTION, sh / PROPORTION);
+
+        frame.setLocationByPlatform(true);
+
+        frame.setVisible(true);
+    }
+
+    /**
+     * Launches the application.
+     *
+     * @param args ignored
+     */
+    public static void main(final String... args) {
+        new SimpleGUI().display();
+     }
 }
