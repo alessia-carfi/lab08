@@ -1,5 +1,6 @@
 package it.unibo.mvc;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
@@ -7,27 +8,32 @@ import java.util.List;
 /**
  */
 public final class DrawNumberApp implements DrawNumberViewObserver {
-    private static final int MIN = 0;
-    private static final int MAX = 100;
-    private static final int ATTEMPTS = 10;
-
+    private static final String PATH = "src/main/resources/config.yml";
+    
+    private final File file = new File(PATH);
     private final DrawNumber model;
     private final List<DrawNumberView> views;
+    private final ConfigurationReader configuration;
 
     /**
      * @param views
      *            the views to attach
+     * @throws FileNotFoundException
      */
-    public DrawNumberApp(final DrawNumberView... views) {
+    public DrawNumberApp(final DrawNumberView... views) throws FileNotFoundException {
+        configuration = new ConfigurationReader(file);
         /*
-         * Side-effect proof
-         */
+        * Side-effect proof
+        */
         this.views = Arrays.asList(Arrays.copyOf(views, views.length));
         for (final DrawNumberView view: views) {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
+        this.model = new DrawNumberImpl(configuration.MINIMUM,
+            configuration.MAXIMUM,
+            configuration.ATTEMPTS
+        );
     }
 
     @Override
@@ -66,7 +72,10 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      * @throws FileNotFoundException 
      */
     public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+        new DrawNumberApp(new DrawNumberViewImpl(),
+            new DrawNumberViewImpl(),
+            new PrintStreamView(System.out),
+            new PrintStreamView("file.log"));
     }
 
 }
